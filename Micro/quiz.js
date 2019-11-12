@@ -1,17 +1,34 @@
+﻿"use strict";
 //https://www.twilio.com/blog/building-javascript-microservices-node-js
 // start the server:
 //   node ./quiz.js 8081
 
 //test the server:
-//   curl -i --request GET localhost:8081/heroes
-
+//   curl -i --request GET localhost:8081/Music
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const port = process.argv.slice(2)[0];
 const app = express();
+
+const _app_folder = 'Desktop/Angular/casestudy2';
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+app.use(cors());
+
+var corsOptions = {
+origin: 'http://localhost:4200',
+optionsSuccessStatus: 200
+};
 
 const area = [
   { id: 1, name: 'NodeJs' },
@@ -19,253 +36,290 @@ const area = [
   { id: 3, name: 'Music' },
 ];
 
-const nodejs = [
-  {
-    id:1,
-    "NodeJs": {
-    "q1": {
-    "question": "What is the NPM?",
-    "options": [
-    "Nuget Package Manager",
-    "Package manager for the JavaScript programming language",
-    "Package manager for Node.js"
-    ],
-    "answer": "Node Package Management"
-    },
-    "q2": {
-    "question": "Does nodejs run on windows?",
-    "options": [
-    "Yes",
-    "No",
-    "Yes, but only nodejs 12.6 and above"
-    ],
-    "answer": "Yes"
-    },
-    "q3": {
-    "question": "What is ‘callback’ in Node.js?",
-    "options": [
-    "Just an internal method in any NodeJs application",
-    "Function used to deal with multiple requests made to the server",
-    "An internal module in NodeJs"
-    ],
-    "answer": "Function used to deal with multiple requests made to the server"
-    },"q4": {
-      "question": "What is express?",
-      "options": [
-      "An external module",
-      "An internal module",
-      "A NodeJs I/O command"
-      ],
-      "answer": "An external module"
-      },
-      "q5": {
-      "question": "How can you delete a file in Node using fs?",
-      "options": [
-      "fs.remove(path, callback)",
-      "fs.unlink(path, callback)",
-      "fs.delete(path, callback)"
-      ],
-      "answer": "fs.unlink(path, callback)"
-      },
-      "q6": {
-      "question": "In order to fire events you can do:",
-      "options": [
-      "emitter.on(eventName, listener)",
-      "emitter.listeners(eventName)",
-      "emitter.emit(eventName[, ...args])"
-      ],
-      "answer": "emitter.emit(eventName[, ...args])"
-      },
-      "q7": {
-      "question": "How to uninstall a dependency using npm?",
-      "options": [
-      "npm install -u dependency-name",
-      "npm uninstall dependency-name",
-      "npm unistall -d dependency-name"
-      ],
-      "answer": "npm uninstall dependency-name"
-      },
-      "q8": {
-      "question": "What is the Package.json?",
-      "options": [
-      "File that holds various metadata relevant to the project. This file is used to give information to npm that allows it to identify the project as well as handle the project's dependencies",
-      "File automatically generated for any operations where npm modifies either the node_modules tree, or package.json. It describes the exact tree that was generated",
-      "File present in the node_modules folder and define all the dependencies for a nodejs app"
-      ],
-      "answer": "File that holds various metadata relevant to the project. This file is used to give information to npm that allows it to identify the project as well as handle the project's dependencies"
-      },
-      "q9": {
-      "question": "How can you remove a directory?",
-      "options": [
-      "fs.rmdir(path, callback)",
-      "fs.deletedir(path, callback)",
-      "fs.deldirectory(path, callback)"
-      ],
-      "answer": "fs.rmdir(path, callback)"
-      },
-      "q10": {
-      "question": "To accommodate the single-threaded event loop, and handle asynchronous events Node.js uses the library?",
-      "options": [
-      "Libuv",
-      "V8Lib",
-      "NodejsCore"
-      ],
-      "answer": "Libuv"
-      }
-      }
-  }
-];
+var http = require('http');
 
-const sport = [
-  {
-    id:2,
-    "Sports": {
-    "q1": {
-    "question": "how many championships Michael Jordan won?",
-    "options": [
-    "5",
-    "6",
-    "7"
-    ],
-    "answer": "6"
-    },
-    "q2": {
-    "question": "The New York Yankees has?",
-    "options": [
-    "27 World Series championships",
-    "29 World Series championships",
-    "30 World Series championships"
-    ],
-    "answer": "27 World Series championships"
-    },
-    "q3": {
-    "question": "Who was Ayrton Senna?",
-    "options": [
-    "Brazilian F1 racing driver",
-    "Brazilian motorcycle road racer",
-    "Italian motorcycle road racer"
-    ],
-    "answer": "Brazilian F1 racing driver"
-    },
-    "q4": {
-    "question": "The team with more championships at the FA Premier League is?",
-    "options": [
-    "Rangers Football Club (18)",
-    "Liverpool (18)",
-    "Manchester United (13)"
-    ],
-    "answer": "Manchester United (13)"
-    }
-    }
-  }
-];
-
-const music = [
-  {
-    id:3,
-    "Music": {
-    "q1": {
-    "question": "The female artist with more Latin Grammys won is?",
-    "options": [
-    "Natalia Lafourcade (10)",
-    "Celia Cruz (16)",
-    "Shakira (13)"
-    ],
-    "answer": "Shakira (13)"
-    },
-    "q2": {
-    "question": "The highest grossing album of 2017 in US?",
-    "options": [
-    "Taylor Swift, Reputation",
-    "Ed Sheeran, ÷ (Divide)",
-    "Bruno Mars, 24K Magic"
-    ],
-    "answer": "Ed Sheeran, ÷ (Divide)"
-    },
-    "q3": {
-      "question": "the highest music viewed video on youtube 2017?",
-      "options": [
-      "See You Again - Wiz Khalifa featuring Charlie Puth",
-      "Despacito - Luis Fonsi",
-      "Shape of You - Ed Sheeran"
-      ],
-      "answer": "Despacito - Luis Fonsi"
-    }
-    }
-  }
-];
-
+// const nodejs = [
 //   {
-//       id: 1,
-//       type: 'spider-dog',
-//       displayName: 'Cooper',
-//       powers: [1, 4],
-//       img: 'cooper.jpg',
-//       busy: false
+//       "qnum" :"1.",
+//       "q": "What is the NPM?",
+//       "opt1": "Nuget Package Manager",
+//   "opt2": "Package manager for the JavaScript programming language",
+//       "opt3": "Package manager for Node.js",
+//       "answer": "Nuget Package Manager"
 //   },
 //   {
-//       id: 2,
-//       type: 'flying-dogs',
-//       displayName: 'Jack & Buddy',
-//       powers: [2, 5],
-//       img: 'jack_buddy.jpg',
-//       busy: false
+//       "qnum" :"2.",
+//   "q": "What is ‘callback’ in Node.js?",
+//       "opt1": "ust an internal method in any NodeJs application",
+//   "opt2": "Function used to deal with multiple requests made to the server",
+//       "opt3": "An internal module in NodeJs",
+//       "answer": "Function used to deal with multiple requests made to the server"
 //   },
 //   {
-//       id: 3,
-//       type: 'dark-light-side',
-//       displayName: 'Max & Charlie',
-//       powers: [3, 2],
-//       img: 'max_charlie.jpg',
-//       busy: false
+//       "qnum" :"3.",
+//       "q": "How can you delete a file in Node using fs?",
+//       "opt1": "fs.remove(path, callback)",
+//   "opt2": "fs.unlink(path, callback)",
+//       "opt3": "fs.delete(path, callback)",
+//       "answer": "fs.unlink(path, callback)"
 //   },
 //   {
-//       id: 4,
-//       type: 'captain-dog',
-//       displayName: 'Rocky',
-//       powers: [1, 5],
-//       img: 'rocky.jpg',
-//       busy: false
+//       "qnum" :"4.",
+//       "q": "Does nodejs run on windows?",
+//       "opt1": "Yes, but only nodejs 12.6 and above",
+//   "opt2": "Yes",
+//       "opt3": "No",
+//       "answer": "Yes"
+//   },
+//   {
+//       "qnum" :"5.",
+//       "q": "In order to fire events you can do:",
+//       "opt1": "emitter.on(eventName, listener)",
+//   "opt2": "emitter.listeners(eventName)",
+//       "opt3": "emitter.emit(eventName[, ...args])",
+//       "answer": "emitter.emit(eventName[, ...args])"
+//   },
+//   { 
+//       "qnum" :"6.",
+//       "q": "How to uninstall a dependency using npm?",
+//       "opt1": "npm install -u dependency-name",
+//   "opt2": "npm uninstall dependency-name",
+//       "opt3": "npm unistall -d dependency-name",
+//       "answer": "npm uninstall dependency-name"
+//   },
+//   {
+//       "qnum" :"7.",
+//       "q": "How can you remove a directory?",
+//       "opt1": "fs.rmdir(path, callback)",
+//   "opt2": "fs.deletedir(path, callback)",
+//       "opt3": "fs.deldirectory(path, callback)",
+//       "answer": "fs.rmdir(path, callback)"
 //   }
 // ];
 
-app.get('/area', (req, res) => {
-  console.log('Returning area list');
-  res.send(area);
-});
+// const sport = [
 
-app.post('/nodejs', (req, res) => {
-  console.log('Returning nodejs list');
-  res.send(nodejs);
-});
-
-app.post('/sport', (req, res) => {
-  console.log('Returning sport list');
-  res.send(sport);
-});
-
-app.post('/music', (req, res) => {
-  console.log('Returning music list');
-  res.send(music);
-});
-
-// app.post('/area/**', (req, res) => {
-//   const heroId = parseInt(req.params[0]);
-//   const foundHero = heroes.find(subject => subject.id === heroId);
-
-//   if (foundHero) {
-//       for (let attribute in foundHero) {
-//           if (req.body[attribute]) {
-//               foundHero[attribute] = req.body[attribute];
-//               console.log(`Set ${attribute} to ${req.body[attribute]} in hero: ${heroId}`);
-//           }
-//       }
-//       res.status(202).header({Location: `http://localhost:${port}/hero/${foundHero.id}`}).send(foundHero);
-//   } else {
-//       console.log(`Hero not found.`);
-//       res.status(404).send();
+//   {
+//       "qnum" :"1.",
+//       "q": "How many championships Michael Jordan won?",
+//       "opt1": "5",
+//       "opt2": "6",
+//       "opt3": "7",
+//       "answer": "6"
+//   },
+//   {
+//       "qnum" :"2.",
+//       "q" : "The New York Yankees has?",
+//       "opt1" : "27 World Series championships",
+//       "opt2" : "29 World Series championships",
+//       "opt3" : "30 World Series championships",
+//       "answer" : "27 World Series championships"
+//   },
+//   {
+//       "qnum" :"3.",
+//       "q" : "Who was Ayrton Senna?",
+//       "opt1" : "Brazilian F1 racing driver",
+//       "opt2" : "Brazilian motorcycle road racer",
+//       "opt3" : "Italian motorcycle road racer",
+//       "answer" : "Brazilian F1 racing driver"
+//   },
+//   {
+//       "qnum" :"4.",
+//       "q" : "Which of these is not a feature of the sports wheelchair?",
+//       "opt1" : "They are made so they can be used both everyday and during the sport",
+//       "opt2" : "They are custom and made to fit the user",
+//       "opt3" : "They can be titanium which makes them much lighter",
+//       "answer" : "They are made so they can be used both everyday and during the sport"
+//   },
+//   {
+//       "qnum" :"5.",
+//       "q" : " Which franchise was the oldest in professional football history?",
+//       "opt1" : "Chicago Bears",
+//       "opt2" : "Arizona Cardinals",
+//       "opt3" : "New York Giants",
+//       "answer" : "Arizona Cardinals"
+//   },
+//   {
+//       "qnum" :"6.",
+//       "q" : "Which one is correct team name in NBA?",
+//       "opt1" : "Golden State Warriros",
+//       "opt2" : "Huston Rocket",
+//       "opt3" : "New York Bulls",
+//       "answer" : "Huston Rocket"
+//   },
+//   {
+//       "qnum" :"7.",
+//       "q" : "In the men's singles 2018 Australian Open Championship, who did Roger Federer defeat to win the championship?",
+//       "opt1" : "Ralph Nadal",
+//       "opt2" : "Novak Djokovic",
+//       "opt3" : "Marin Cilic",
+//       "answer" : "Marin Cilic"
+//   },
+//   {
+//       "qnum" :"8.",
+//       "q" : "Who was the cover athlete of the video game 'NBA Live'",
+//       "opt1" : "Antoine Walker",
+//       "opt2" : "Jonny Tredman",
+//       "opt3" : "Tom Cruz",
+//       "answer" : "Antoine Walker"
+//   },
+//   {
+//       "qnum" :"9.",
+//       "q" : "In a professional tour game in tennis, the chair umpire may call a point penalty upon?",
+//       "opt1" : "First violation",
+//       "opt2" : "Second violation",
+//       "opt3" : "Third violation",
+//       "answer" : "Second violation"
+//   },
+//   {
+//       "qnum" :"10.",
+//       "q" : "The team with more championships at the FA Premier League is?",
+//       "opt1" : "Rangers Football Club (18)",
+//       "opt2" : "Liverpool (18)",
+//       "opt3" : "Manchester United (13)",
+//       "answer" : "Manchester United (13)"
 //   }
+// ];
+
+// const music = 
+// [
+//     {
+//         "qnum" :"1.",
+//         "q": "Which music diva lost both her brother and husband to cancer in 2016?",
+//         "opt1": "Taylor Swift",
+//         "opt2": "Celine Dion",
+//         "opt3": "Mariah Carey",
+//         "answer": "Celine Dion"
+//     },
+//     {
+//         "qnum" :"2.",
+//         "q": "Michael Jackson's 1982 album Thriller featured a duet with which other legendary artist?",
+//         "opt1": "Johnny Cash",
+//         "opt2": "Paul McCartney",
+//         "opt3": "Mariah Carey",
+//         "answer": "Paul McCartney"
+//     },
+//     {  
+//         "qnum" :"3.",
+//         "q": "Who was the first female singer to be inducted into the Rock and Roll Hall of Fame?",
+//         "opt1": "Johnny Cash",
+//         "opt2": "Aretha Franklin",
+//         "opt3": "Mariah Carey",
+//         "answer": "Aretha Franklin"
+//     },
+//     {
+//         "qnum" :"4.",
+//         "q": "Musician Peter Tork died on 21 February 2019. Which band was he a part of?",
+//         "opt1": "Pearl Jam",
+//         "opt2": "The Monkees",
+//         "opt3": "Dio",
+//         "answer": "The Monkees"
+//     },
+//     {
+//         "qnum" :"5.",
+//         "q": "Which mathematical symbol is not the name of an Ed Sheeran album?",
+//         "opt1": "Plus",
+//         "opt2": "Multiply",
+//         "opt3": "Subtract",
+//         "answer": "Subtract"
+//     },
+//     { 
+//         "qnum" :"6.",
+//         "q": "Complete the Mark Ronson song title: Uptown...",
+//         "opt1": "Beat",
+//         "opt2": "Funk",
+//         "opt3": "Girl",
+//         "answer": "Funk"
+//     },
+//     {
+//         "qnum" :"7.",
+//         "q": "Which Beatle performed a James Bond theme song?",
+//         "opt1": "John Lennon",
+//         "opt2": "Paul McCartney",
+//         "opt3": "Ringo Starr",
+//         "answer": "Paul McCartney"
+//     },
+//     {
+//         "qnum" :"8.",
+//         "q": "Which is the most popular genre of music in terms of number of radio stations?",
+//         "opt1": "Hip-hop",
+//         "opt2": "Country",
+//         "opt3": "Rock",
+//         "answer": "Country"
+//     }
+//   ];
+
+const fs = require('fs');
+
+//let nodejs1 = JSON.parse(fs.readFileSync('./data/node.json'));
+//console.log(nodejs1);
+
+// app.get('/area?', (req, res) => {
+//   console.log('Returning area list');  
+//   res.send(req.query.area);
 // });
+
+
+// app.server.get('*.*', express.static(_app_folder, {maxAge: '1d'}));
+
+// app.all('*', function(req, res){
+//     res.status(200).sendFile('/', {root: _app_folder});
+// });
+app.post('/login',(req, res) => {
+  //console.log('Returning login list');
+  //console.log(req.body.user);
+  //res.writeHead(200, {'Content-Type': 'text/plain'});
+  const data=require('./data/login.json');
+  //console.log(data);
+
+  //console.log(req.body);
+  console.log('Returning login list');
+
+  var flag = 1;
+
+  for(let i in data){
+   
+    console.log(req.body.user+"$$$$"+req.body.pass);
+    console.log(data[0].username+"@@@@"+data[0].password);
+
+
+    if(req.body.user==data[i].username && req.body.pass==data[i].password){  
+  console.log(data[i].username);
+    
+    
+    flag=0;
+  }
+  
+
+
+
+
+  }
+
+
+  if(flag==0){
+    res.send({"status":"success"});
+  }else{
+    res.send({"status":"failure"});
+  }
+
+  
+});
+
+app.get('/quiz/nodejs', (req, res) => {                                                     
+  console.log('Returning nodejs list');
+  res.send(JSON.parse(fs.readFileSync('./data/node.json')));
+});
+
+app.get('/quiz/sport', (req, res) => {
+  console.log('Returning sport list');
+  res.send(JSON.parse(fs.readFileSync('./data/sports.json')));
+});
+
+app.get('/quiz/music', (req, res) => {
+  console.log('Returning music list');
+  res.send(JSON.parse(fs.readFileSync('./data/music.json')));
+});
 
 console.log(`Questions service listening on port ${port}`);
 app.listen(port);
